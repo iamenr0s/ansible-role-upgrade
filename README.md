@@ -1,7 +1,7 @@
-Role Name
+Ansible Role: Upgrade
 =========
 
-A brief description of the role goes here.
+This role performs upgrades on Debian/Ubuntu, and RHEL/Almalinux/RockyLinux, Fedora servers.
 
 Requirements
 ------------
@@ -16,21 +16,19 @@ A description of the settable variables for this role should go here, including 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+None
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
+    - hosts: all
       roles:
-         - { role: username.rolename, x: 42 }
+         - { role: iamenr0s.ansible_role_upgrade }
 
 License
 -------
 
-BSD
+This project is licensed under the MIT License.
 
 Author Information
 ------------------
