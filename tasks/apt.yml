@@ -1,0 +1,44 @@
+---
+# tasks file for ansible-role-upgrade
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  tags: upgrade
+
+- name: Ensure Dependencies are present.
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - apt
+    - apt-utils
+  tags: upgrade
+
+- name: Mark packages on hold {{ upgrade_packages_on_hold }}
+  ansible.builtin.command:
+    cmd: "apt-mark hold {{ item }}"
+  loop: "{{ upgrade_packages_on_hold }}"
+  tags: upgrade
+
+- name: Upgrade via apt module
+  ansible.builtin.apt:
+    upgrade: yes
+  tags: upgrade
+
+- name: Remove packages on hold
+  ansible.builtin.command:
+    cmd: "apt-mark unhold {{ item }}"
+  loop: "{{ upgrade_packages_on_hold }}"
+  tags: upgrade
+
+- name: Clean apt cache
+  ansible.builtin.apt:
+    autoclean: yes
+  tags: upgrade
+
+- name: Check for Reboot Hint 
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: reboot_hint

@@ -1,0 +1,34 @@
+---
+# tasks file for ansible-role-upgrade
+
+- name: Fail if target host is not stable for this Role
+  ansible.builtin.fail:
+    msg: "This role is not compatible with the current OS version."
+  when: ansible_distribution + " " + ansible_distribution_version not in upgrade_stable_os
+
+- name: Gather facts about the system at minimum verbosity
+  ansible.builtin.setup:
+    gather_subset: min
+
+- name: Check system uptime (in seconds) set fact
+  ansible.builtin.set_fact:
+    system_uptime: "{{ ansible_date_time.epoch | int - ansible_system_uptime_seconds | int }}"
+
+- name: Get system load average first value
+  ansible.builtin.set_fact:
+    system_loadavg: "{{ ansible_system_load1 }}"
+  
+- name: Check if the host is stable (uptime and load average) and fail if not
+  ansible.builtin.fail:
+    msg: "Host is not stable, uptime: {{ system_uptime }} seconds, load average: {{ system_loadavg }}"
+  when: system_uptime < min_uptime or system_loadavg > max_load_avg
+
+- name: Get FS facts
+  ansible.builtin.setup:
+    gather_subset: filesystem
+
+- name: Check filesystem usage and fail if any filesystem is above the threshold
+  ansible.builtin.fail:
+    msg: "Filesystem {{ item.mount }} is above the threshold: {{ item.percent_used }}%"
+  loop: "{{ ansible_facts.mounts | selectattr('percent_used', 'ge', 90) | list }}"
+  when: ansible_facts.mounts | selectattr('percent_used', 'ge', 90) | list | count > 0

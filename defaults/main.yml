@@ -1,2 +1,30 @@
 ---
 # defaults file for ansible-role-upgrade
+
+upgrade_stable_os:
+  - Almalinux 8
+  - Almalinux 9
+  - Debian 10
+  - Debian 11
+  - Debian 12
+  - Fedora 38
+  - Fedora 39
+  - Fedora 40
+  - Rocky 8
+  - Rocky 9
+  - Ubuntu 20
+  - Ubuntu 22
+  - Ubuntu 24
+
+# Minimum uptime in seconds (1 hour)
+min_uptime: 3600
+# Maximum allowed load average
+max_load_avg: 1.0
+# Timeout for the server to be back online (in seconds)
+wait_for_timeout: 300
+# Delay before rebooting the server (in seconds)
+reboot_delay: 10
+# Default SSH port to check connectivity
+wait_for_port: 22
+# List of packages to hold
+upgrade_packages_on_hold: []

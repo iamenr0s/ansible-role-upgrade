@@ -1,0 +1,29 @@
+---
+# tasks file for ansible-role-upgrade
+
+- name: Reboot the server after OS upgrade and register the reboot
+  ansible.builtin.reboot:
+    reboot_timeout: "{{ wait_for_timeout }}"
+    pre_reboot_delay: "{{ reboot_delay }}"
+  when: reboot_hint.stdout != ""
+  register: reboot_result
+  tags: upgrade
+
+- name: Wait for the server to be back online
+  ansible.builtin.wait_for:
+    host: "{{ ansible_host }}"
+    port: "{{ wait_for_port }}"
+    timeout: "{{ wait_for_timeout }}"
+    state: started
+  when: reboot_result is defined
+  tags: upgrade
+
+- name: Verify server connectivity after reboot ping
+  ansible.builtin.ping:
+  when: reboot_result is defined
+  tags: upgrade
+
+- name: Check if the server is back online and fail if not
+  ansible.builtin.fail:
+    msg: "Server is not back online after reboot"
+  when: not reboot.finished
