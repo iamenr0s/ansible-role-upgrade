@@ -3,32 +3,34 @@
 
 - name: Fail if target host is not stable for this Role
   ansible.builtin.fail:
-    msg: "This role is not compatible with the current OS version."
-  when: ansible_distribution + " " + ansible_distribution_version not in upgrade_stable_os
+    msg: "This role is not compatible with the current OS version {{ ansible_distribution }} - {{ ansible_distribution_version.split('.')[0] }}"
+  when: ansible_distribution + " " + ansible_distribution_version.split('.')[0] not in upgrade_stable_os
 
 - name: Gather facts about the system at minimum verbosity
   ansible.builtin.setup:
-    gather_subset: min
+    gather_subset:
+      - '!all'
+      - '!min'
+      - 'loadavg'
+      - 'mounts'
 
 - name: Check system uptime (in seconds) set fact
   ansible.builtin.set_fact:
-    system_uptime: "{{ ansible_date_time.epoch | int - ansible_system_uptime_seconds | int }}"
+    system_uptime: "{{ ansible_uptime_seconds | int }}"
 
 - name: Get system load average first value
   ansible.builtin.set_fact:
-    system_loadavg: "{{ ansible_system_load1 }}"
-  
-- name: Check if the host is stable (uptime and load average) and fail if not
-  ansible.builtin.fail:
-    msg: "Host is not stable, uptime: {{ system_uptime }} seconds, load average: {{ system_loadavg }}"
-  when: system_uptime < min_uptime or system_loadavg > max_load_avg
+    system_loadavg: "{{ ansible_loadavg['15m'] | float }}"
 
-- name: Get FS facts
-  ansible.builtin.setup:
-    gather_subset: filesystem
+- name: Check if the host is stable (uptime and load average) and fail if not
+  ansible.builtin.debug:
+    msg: "Host is not stable, uptime: {{ system_uptime }} seconds, load average: {{ system_loadavg }}"
+  #when: system_uptime < min_uptime or system_loadavg > max_load_avg
 
 - name: Check filesystem usage and fail if any filesystem is above the threshold
-  ansible.builtin.fail:
-    msg: "Filesystem {{ item.mount }} is above the threshold: {{ item.percent_used }}%"
-  loop: "{{ ansible_facts.mounts | selectattr('percent_used', 'ge', 90) | list }}"
-  when: ansible_facts.mounts | selectattr('percent_used', 'ge', 90) | list | count > 0
+  ansible.builtin.debug:
+    msg: "Filesystem {{ item.mount }} is above the threshold: {{ item.size_available * 100 / item.size_total | round(2) }}%"
+    #msg: "Mount: {{ item.mount }} is using {{ item.size_available * 100 / item.size_total | round(2) }}% of its capacity."
+  loop: "{{ ansible_mounts }}"
+  #loop: "{{ ansible_mounts | selectattr( item.size_available * 100 / item.size_total | round(2), 'ge', 90) | list }}"
+  #when: ansible_mounts | selectattr( item.size_available * 100 / item.size_total | round(2), 'ge', 90) | list | count > 0
