@@ -41,4 +41,5 @@
 - name: Check for Reboot Hint 
   ansible.builtin.stat:
     path: /var/run/reboot-required
-  register: reboot_hint
+  register: needs_restarting
+  tags: upgrade

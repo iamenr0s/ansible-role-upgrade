@@ -37,8 +37,8 @@
 - name: Check for Reboot Hint
   ansible.builtin.command:
     cmd: "yum needs-restarting -r"
-  register: reboot_hint
-  changed_when: reboot_hint.stdout != ""
-  failed_when: reboot_hint.rc != 0
+  register: needs_restarting
+  changed_when: needs_restarting.rc == 1
+  failed_when: needs_restarting.rc == 0
   tags: upgrade
   

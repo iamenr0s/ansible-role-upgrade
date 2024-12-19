@@ -5,7 +5,7 @@
   ansible.builtin.reboot:
     reboot_timeout: "{{ wait_for_timeout }}"
     pre_reboot_delay: "{{ reboot_delay }}"
-  when: reboot_hint.stdout != ""
+  when: needs_restarting.stdout != ""
   register: reboot_result
   tags: upgrade
 
