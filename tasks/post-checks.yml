@@ -5,7 +5,7 @@
   ansible.builtin.reboot:
     reboot_timeout: "{{ wait_for_timeout }}"
     pre_reboot_delay: "{{ reboot_delay }}"
-  when: needs_restarting.stdout != ""
+  when: needs_restarting.changed
   register: reboot_result
   tags: upgrade
 
@@ -26,4 +26,5 @@
 - name: Check if the server is back online and fail if not
   ansible.builtin.fail:
     msg: "Server is not back online after reboot"
-  when: not reboot.finished
+  changed_when: reboot_result.rebooted is true and reboot_result.changed is true
+  failed_when: reboot_result.rebooted is false and reboot_result.changed is true

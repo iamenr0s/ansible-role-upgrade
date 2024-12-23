@@ -1,0 +1,21 @@
+---
+# molecule/default/verify.yml
+
+- name: Verify playbook for idempotence
+  hosts: all
+  gather_facts: false
+  tasks:
+
+    - name: Ensure the system does not need restarting (but don't affect idempotence)
+      ansible.builtin.command:
+        cmd: "dnf needs-restarting -r"
+      register: needs_restart
+      changed_when: false
+      ignore_errors: yes
+
+    - name: Assert that no restart is needed (optional check)
+      ansible.builtin.assert:
+        that:
+          - needs_restart.rc == 0
+        fail_msg: "System needs restarting!"
+      when: needs_restart.rc is not none
