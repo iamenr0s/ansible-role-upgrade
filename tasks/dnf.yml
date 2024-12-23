@@ -41,4 +41,3 @@
   changed_when: needs_restarting.rc == 1
   failed_when: needs_restarting.rc == 0 and needs_restarting.changed is true
   tags: upgrade
-
