@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly on Monday
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: make install-deps-qemu
+
+      - name: Run linting and syntax check
+        run: make check
+
+  test-roles:
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      matrix:
+        distro: [ubuntu2404, ubuntu2204, debian12, debian11, almalinux8, almalinux9, almalinux10, rockylinux8, rockylinux9, rockylinux10, fedora40, fedora41, fedora42]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: make install-deps-qemu
+
+      - name: Test with Molecule QEMU
+        run: make test-${{ matrix.distro }}
+        env:
+          MOLECULE_MEMORY: 4096
+          MOLECULE_CPUS: 2
+          MOLECULE_DISK: 20G
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+
