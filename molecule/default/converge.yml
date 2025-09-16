@@ -20,4 +20,5 @@
       failed_when: systemctl_status.rc > 1
 
   roles:
-    - role: iamenr0s.ansible_role_upgrade
+    - role: ../../
+      name: upgrade
