@@ -146,6 +146,17 @@ test-rockylinux9:
 	MOLECULE_MEMORY=$(MOLECULE_MEMORY) MOLECULE_CPUS=$(MOLECULE_CPUS) MOLECULE_DISK=$(MOLECULE_DISK) \
 	molecule -v test
 
+test-rockylinux8:
+	@echo "$(GREEN)Testing Rocky Linux 8 with QEMU...$(NC)"
+	MOLECULE_DISTRO=rockylinux8 \
+	MOLECULE_IMAGE_URL=https://download.rockylinux.org/pub/rocky/8/images/x86_64/Rocky-8-GenericCloud-Base.latest.x86_64.qcow2 \
+	MOLECULE_IMAGE_CHECKSUM=sha256:e56066c58606191e96184de9a9183a3af33c59bcbd8740d8b10ca054a7a89c14 \
+	MOLECULE_SSH_USER=rocky \
+	MOLECULE_GROUP=rhel_family \
+	MOLECULE_NETWORK_SSH_PORT=$(MOLECULE_SSH_PORT) \
+	MOLECULE_MEMORY=$(MOLECULE_MEMORY) MOLECULE_CPUS=$(MOLECULE_CPUS) MOLECULE_DISK=$(MOLECULE_DISK) \
+	molecule -v test
+
 test-almalinux10:
 	@echo "$(GREEN)Testing AlmaLinux 10 with QEMU...$(NC)"
 	MOLECULE_DISTRO=almalinux10 \
@@ -168,6 +179,17 @@ test-almalinux9:
 	MOLECULE_MEMORY=$(MOLECULE_MEMORY) MOLECULE_CPUS=$(MOLECULE_CPUS) MOLECULE_DISK=$(MOLECULE_DISK) \
 	molecule -v test
 
+test-almalinux8:
+	@echo "$(GREEN)Testing AlmaLinux 8 with QEMU...$(NC)"
+	MOLECULE_DISTRO=almalinux8 \
+	MOLECULE_IMAGE_URL=https://repo.almalinux.org/almalinux/8/cloud/x86_64/images/AlmaLinux-8-GenericCloud-latest.x86_64.qcow2 \
+	MOLECULE_IMAGE_CHECKSUM=sha256:https://repo.almalinux.org/almalinux/8/cloud/x86_64/images/CHECKSUM \
+	MOLECULE_SSH_USER=almalinux \
+	MOLECULE_GROUP=rhel_family \
+	MOLECULE_NETWORK_SSH_PORT=$(MOLECULE_SSH_PORT) \
+	MOLECULE_MEMORY=$(MOLECULE_MEMORY) MOLECULE_CPUS=$(MOLECULE_CPUS) MOLECULE_DISK=$(MOLECULE_DISK) \
+	molecule -v test
+
 test-fedora42:
 	@echo "$(GREEN)Testing Fedora 42 with QEMU...$(NC)"
 	MOLECULE_DISTRO=fedora42 \
@@ -184,6 +206,17 @@ test-fedora41:
 	MOLECULE_DISTRO=fedora41 \
 	MOLECULE_IMAGE_URL=https://b4sh.mm.fcix.net/fedora/linux/releases/41/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-41-1.4.x86_64.qcow2 \
 	MOLECULE_IMAGE_CHECKSUM=sha256:6205ae0c524b4d1816dbd3573ce29b5c44ed26c9fbc874fbe48c41c89dd0bac2 \
+	MOLECULE_SSH_USER=fedora \
+	MOLECULE_GROUP=rhel_family \
+	MOLECULE_NETWORK_SSH_PORT=$(MOLECULE_SSH_PORT) \
+	MOLECULE_MEMORY=$(MOLECULE_MEMORY) MOLECULE_CPUS=$(MOLECULE_CPUS) MOLECULE_DISK=$(MOLECULE_DISK) \
+	molecule -v test
+
+test-fedora40:
+	@echo "$(GREEN)Testing Fedora 40 with QEMU...$(NC)"
+	MOLECULE_DISTRO=fedora40 \
+	MOLECULE_IMAGE_URL=https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/40/Cloud/x86_64/images/Fedora-Cloud-Base-Generic.x86_64-40-1.14.qcow2 \
+	MOLECULE_IMAGE_CHECKSUM=sha256:ac58f3c35b73272d5986fa6d3bc44fd246b45df4c334e99a07b3bbd00684adee \
 	MOLECULE_SSH_USER=fedora \
 	MOLECULE_GROUP=rhel_family \
 	MOLECULE_NETWORK_SSH_PORT=$(MOLECULE_SSH_PORT) \
