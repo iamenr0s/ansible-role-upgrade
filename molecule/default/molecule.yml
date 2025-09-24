@@ -1,26 +1,46 @@
 ---
-role_name_check: 1
 dependency:
   name: galaxy
-  options:
-    ignore-errors: true
+lint: |
+  yamllint .
+  ansible-lint
 driver:
-  name: vagrant
-  provider:
-    name: libvirt
-  config_options:
-    defaults:
-      remote_user: vagrant
-    ssh_connection:
-      ssh_args: -o StrictHostKeyChecking=no -o User=vagrant
-      pipelining: true
-      timeout: 300
+  name: molecule-qemu
 platforms:
-  - name: instance
-    box: generic/fedora38
-    memory: 512
-    cpus: 1
+  - name: "${MOLECULE_DISTRO:-ubuntu2204}"
+    image_url: "${MOLECULE_IMAGE_URL}"
+    image_checksum: "${MOLECULE_IMAGE_CHECKSUM}"
+    network_ssh_port: ${MOLECULE_NETWORK_SSH_PORT:-2222}
+    vm_cpus: 4 # optional, default is 1
+    vm_memory: 2048 # optional, default is 512
+    vm_disk: 20G # optional, default is 8G
+    groups:
+      - "${MOLECULE_GROUP:-debian_family}"
 provisioner:
   name: ansible
-  playbooks:
-    converge: ${MOLECULE_PLAYBOOK:-converge.yml}
+  env:
+    ANSIBLE_FORCE_COLOR: "${MOLECULE_ANSIBLE_COLOR:-true}"
+  config_options:
+    defaults:
+      retry_files_enabled: true
+      host_key_checking: false
+      connection_retries: 10
+      connection_retry_sleep: 15
+  options:
+    vvv: "${MOLECULE_VERBOSE:-false}"
+verifier:
+  name: ansible
+scenario:
+  test_sequence:
+    - dependency
+    - cleanup
+    - destroy
+    - syntax
+    - create
+    - prepare
+    - converge
+    - idempotence
+    - side_effect
+    - verify
+    - cleanup
+    - destroy
