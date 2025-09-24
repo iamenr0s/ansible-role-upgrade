@@ -2,13 +2,13 @@
 # tasks file for ansible-role-upgrade
 
 - name: Include pre-checks tasks
-  include_tasks: pre-checks.yml
+  ansible.builtin.include_tasks: pre-checks.yml
   tags: upgrade
 
 - name: Include Package Manager specific Playbook
-  include_tasks: "{{ ansible_pkg_mgr }}.yml"
+  ansible.builtin.include_tasks: "{{ ansible_pkg_mgr }}.yml"
   tags: upgrade
 
 - name: Include post-checks tasks
-  include_tasks: post-checks.yml
+  ansible.builtin.include_tasks: post-checks.yml
   tags: upgrade

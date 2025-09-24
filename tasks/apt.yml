@@ -20,6 +20,8 @@
   ansible.builtin.command:
     cmd: "apt-mark hold {{ item }}"
   loop: "{{ upgrade_packages_on_hold }}"
+  register: apt_hold_result
+  changed_when: "'was already set on hold' not in apt_hold_result.stdout"
   tags: upgrade
 
 - name: apt | Upgrade via apt module
@@ -31,6 +33,8 @@
   ansible.builtin.command:
     cmd: "apt-mark unhold {{ item }}"
   loop: "{{ upgrade_packages_on_hold }}"
+  register: apt_unhold_result
+  changed_when: "'was already not hold' not in apt_unhold_result.stdout"
   tags: upgrade
 
 - name: apt | Clean apt cache

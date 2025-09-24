@@ -14,19 +14,24 @@
   ansible.builtin.command:
     cmd: "dnf versionlock add {{ item }}"
   loop: "{{ upgrade_packages_on_hold }}"
+  register: dnf_versionlock_add_result
+  changed_when: "'already locked' not in dnf_versionlock_add_result.stderr"
   tags: upgrade
 
 - name: Upgrade via dnf module
   ansible.builtin.dnf:
     name: "*"
-    state: latest
+    state: present
     update_cache: yes
+    update_only: yes
   tags: upgrade
 
 - name: Remove packages on hold
   ansible.builtin.command:
     cmd: "dnf versionlock delete {{ item }}"
   loop: "{{ upgrade_packages_on_hold }}"
+  register: dnf_versionlock_delete_result
+  changed_when: "'not locked' not in dnf_versionlock_delete_result.stderr"
   tags: upgrade
 
 - name: Clean dnf cache
