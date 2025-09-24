@@ -1,23 +1,23 @@
 ---
 - name: Converge
   hosts: all
-  vars:
-    remote_user: vagrant
   become: true
-  become_method: sudo
+<<<<<<< HEAD
+  become_method: ansible.builtin.sudo
+=======
+>>>>>>> parent of e667dff (initial commit)
 
   pre_tasks:
     - name: Wait for systemd to complete initialization
-      command: systemctl is-system-running
-      register: systemctl_status
-      until: >
-        'running' in systemctl_status.stdout or
-        'degraded' in systemctl_status.stdout
+      ansible.builtin.systemd:
+        name: systemd-logind
+      register: systemd_status
+      until: systemd_status.status.ActiveState == "active"
       retries: 30
       delay: 5
       when: ansible_service_mgr == 'systemd'
       changed_when: false
-      failed_when: systemctl_status.rc > 1
 
   roles:
-    - role: iamenr0s.ansible_role_upgrade
+    - role: ../../
+      name: upgrade

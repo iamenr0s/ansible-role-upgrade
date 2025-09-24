@@ -1,21 +1,207 @@
 ---
-# molecule/default/verify.yml
+# Molecule verify playbook for ansible-role-upgrade
 
-- name: Verify playbook for idempotence
+- name: Verify
   hosts: all
-  gather_facts: false
+  gather_facts: true
+  become: true
+  become_method: ansible.builtin.sudo
+
   tasks:
-
-    - name: Ensure the system does not need restarting (but don't affect idempotence)
-      ansible.builtin.command:
-        cmd: "dnf needs-restarting -r"
-      register: needs_restart
-      changed_when: false
-      ignore_errors: yes
-
-    - name: Assert that no restart is needed (optional check)
+    - name: Verify system facts are gathered
       ansible.builtin.assert:
         that:
-          - needs_restart.rc == 0
-        fail_msg: "System needs restarting!"
-      when: needs_restart.rc is not none
+          - ansible_distribution is defined
+          - ansible_distribution_version is defined
+          - ansible_uptime_seconds is defined
+          - ansible_loadavg is defined
+          - ansible_mounts is defined
+        fail_msg: "Required system facts are not available"
+        success_msg: "System facts are properly gathered"
+
+    - name: Verify OS is supported
+      ansible.builtin.assert:
+        that:
+          - ansible_distribution + " " + ansible_distribution_version.split('.')[0] in upgrade_stable_os
+        fail_msg: "OS {{ ansible_distribution }} {{ ansible_distribution_version.split('.')[0] }} is not in supported list"
+        success_msg: "OS {{ ansible_distribution }} {{ ansible_distribution_version.split('.')[0] }} is supported"
+
+    - name: Verify system uptime is reasonable
+      ansible.builtin.assert:
+        that:
+          - ansible_uptime_seconds | int >= 0
+        fail_msg: "System uptime is invalid: {{ ansible_uptime_seconds }}"
+        success_msg: "System uptime is valid: {{ ansible_uptime_seconds }} seconds"
+
+    - name: Verify load average is within acceptable range
+      ansible.builtin.assert:
+        that:
+          - ansible_loadavg['15m'] | float >= 0
+          - ansible_loadavg['15m'] | float <= 10.0
+        fail_msg: "Load average is outside acceptable range: {{ ansible_loadavg['15m'] }}"
+        success_msg: "Load average is acceptable: {{ ansible_loadavg['15m'] }}"
+
+    - name: Verify filesystem mounts are available
+      ansible.builtin.assert:
+        that:
+          - ansible_mounts | length > 0
+        fail_msg: "No filesystem mounts found"
+        success_msg: "Filesystem mounts are available: {{ ansible_mounts | length }} mounts"
+
+    - name: Verify root filesystem has reasonable space
+      ansible.builtin.assert:
+        that:
+          - item.size_available | int > 0
+          - item.size_total | int > 0
+          - (item.size_available * 100 / item.size_total) | round(2) < 95
+        fail_msg: "Root filesystem {{ item.mount }} has insufficient space: {{ (item.size_available * 100 / item.size_total) | round(2) }}% available"
+        success_msg: "Root filesystem {{ item.mount }} has adequate space: {{ (item.size_available * 100 / item.size_total) | round(2) }}% available"
+      loop: "{{ ansible_mounts }}"
+      when: item.mount == "/"
+
+    # Package manager specific verifications
+    - name: Verify package manager is available (apt)
+      ansible.builtin.command:
+        cmd: which apt
+      register: apt_check
+      failed_when: false
+      changed_when: false
+      when: ansible_pkg_mgr == "apt"
+
+    - name: Assert apt is available when expected
+      ansible.builtin.assert:
+        that:
+          - apt_check.rc == 0
+        fail_msg: "apt package manager not found but expected for {{ ansible_distribution }}"
+        success_msg: "apt package manager is available"
+      when: ansible_pkg_mgr == "apt"
+
+    - name: Verify package manager is available (yum)
+      ansible.builtin.command:
+        cmd: which yum
+      register: yum_check
+      failed_when: false
+      changed_when: false
+      when: ansible_pkg_mgr == "yum"
+
+    - name: Assert yum is available when expected
+      ansible.builtin.assert:
+        that:
+          - yum_check.rc == 0
+        fail_msg: "yum package manager not found but expected for {{ ansible_distribution }}"
+        success_msg: "yum package manager is available"
+      when: ansible_pkg_mgr == "yum"
+
+    - name: Verify package manager is available (dnf)
+      ansible.builtin.command:
+        cmd: which dnf
+      register: dnf_check
+      failed_when: false
+      changed_when: false
+      when: ansible_pkg_mgr == "dnf"
+
+    - name: Assert dnf is available when expected
+      ansible.builtin.assert:
+        that:
+          - dnf_check.rc == 0
+        fail_msg: "dnf package manager not found but expected for {{ ansible_distribution }}"
+        success_msg: "dnf package manager is available"
+      when: ansible_pkg_mgr == "dnf"
+
+    # Verify system services are running
+    - name: Check if systemd is the service manager
+      ansible.builtin.systemd:
+        name: systemd-logind
+      register: systemd_status
+      failed_when: false
+      changed_when: false
+      when: ansible_service_mgr == "systemd"
+
+    - name: Verify systemd is operational
+      ansible.builtin.assert:
+        that:
+          - systemd_status.status is defined
+          - systemd_status.status.ActiveState == "active"
+        fail_msg: "systemd is not running properly"
+        success_msg: "systemd is operational"
+      when: ansible_service_mgr == "systemd"
+
+    # Verify SSH connectivity (important for post-reboot verification)
+    - name: Verify SSH service is running
+      ansible.builtin.service_facts:
+
+    - name: Assert SSH service is active
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.services['ssh.service'].state == 'running' or
+            ansible_facts.services['sshd.service'].state == 'running'
+        fail_msg: "SSH service is not running"
+        success_msg: "SSH service is active and running"
+      when: ansible_service_mgr == "systemd"
+
+    # Verify network connectivity
+    - name: Test network connectivity
+      ansible.builtin.uri:
+        url: "http://www.google.com"
+        method: HEAD
+        timeout: 10
+      register: network_test
+      failed_when: false
+      changed_when: false
+
+    - name: Verify network connectivity is available
+      ansible.builtin.assert:
+        that:
+          - network_test.status is defined
+          - network_test.status == 200 or network_test.status == 301 or network_test.status == 302
+        fail_msg: "Network connectivity test failed"
+        success_msg: "Network connectivity is working"
+      when: network_test.status is defined
+
+    # Verify role variables are properly defined
+    - name: Verify required role variables are defined
+      ansible.builtin.assert:
+        that:
+          - upgrade_stable_os is defined
+          - upgrade_stable_os | length > 0
+          - min_uptime is defined
+          - min_uptime | int >= 0
+          - max_load_avg is defined
+          - max_load_avg | float >= 0
+          - wait_for_timeout is defined
+          - wait_for_timeout | int > 0
+          - reboot_delay is defined
+          - reboot_delay | int >= 0
+          - wait_for_port is defined
+          - wait_for_port | int > 0
+          - upgrade_packages_on_hold is defined
+        fail_msg: "One or more required role variables are not properly defined"
+        success_msg: "All required role variables are properly defined"
+
+    # Verify package cache is updated (for apt systems)
+    - name: Check apt cache timestamp
+      ansible.builtin.stat:
+        path: /var/lib/apt/lists
+      register: apt_cache_stat
+      when: ansible_pkg_mgr == "apt"
+
+    - name: Verify apt cache exists and is recent
+      ansible.builtin.assert:
+        that:
+          - apt_cache_stat.stat.exists
+          - apt_cache_stat.stat.isdir
+        fail_msg: "apt cache directory does not exist or is not accessible"
+        success_msg: "apt cache directory is present and accessible"
+      when: ansible_pkg_mgr == "apt"
+
+    # Final system health check
+    - name: Perform final system health verification
+      ansible.builtin.debug:
+        msg: |
+          System verification completed successfully:
+          - OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+          - Package Manager: {{ ansible_pkg_mgr }}
+          - Uptime: {{ ansible_uptime_seconds }} seconds
+          - Load Average: {{ ansible_loadavg['15m'] }}
+          - Service Manager: {{ ansible_service_mgr }}
+          - All verification tests passed

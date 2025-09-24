@@ -25,12 +25,12 @@
 - name: Check if the host is stable (uptime and load average) and fail if not
   ansible.builtin.debug:
     msg: "Host is not stable, uptime: {{ system_uptime }} seconds, load average: {{ system_loadavg }}"
-  #when: system_uptime < min_uptime or system_loadavg > max_load_avg
+  when: system_uptime < min_uptime or system_loadavg > max_load_avg
 
 - name: Check filesystem usage and fail if any filesystem is above the threshold
   ansible.builtin.debug:
     msg: "Filesystem {{ item.mount }} is above the threshold: {{ item.size_available * 100 / item.size_total | round(2) }}%"
-    #msg: "Mount: {{ item.mount }} is using {{ item.size_available * 100 / item.size_total | round(2) }}% of its capacity."
+    # msg: "Mount: {{ item.mount }} is using {{ item.size_available * 100 / item.size_total | round(2) }}% of its capacity."
   loop: "{{ ansible_mounts }}"
-  #loop: "{{ ansible_mounts | selectattr( item.size_available * 100 / item.size_total | round(2), 'ge', 90) | list }}"
-  #when: ansible_mounts | selectattr( item.size_available * 100 / item.size_total | round(2), 'ge', 90) | list | count > 0
+  # loop: "{{ ansible_mounts | selectattr( item.size_available * 100 / item.size_total | round(2), 'ge', 90) | list }}"
+  # when: ansible_mounts | selectattr( item.size_available * 100 / item.size_total | round(2), 'ge', 90) | list | count > 0

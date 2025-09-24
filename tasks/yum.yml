@@ -11,8 +11,9 @@
   tags: upgrade
 
 - name: Mark packages on hold {{ upgrade_packages_on_hold }}
-  ansible.builtin.command:
-    cmd: "yum versionlock add {{ item }}"
+  community.general.yum_versionlock:
+    name: "{{ item }}"
+    state: present
   loop: "{{ upgrade_packages_on_hold }}"
   tags: upgrade
 
@@ -24,8 +25,9 @@
   tags: upgrade
 
 - name: Remove packages on hold
-  ansible.builtin.command:
-    cmd: "yum versionlock delete {{ item }}"
+  community.general.yum_versionlock:
+    name: "{{ item }}"
+    state: absent
   loop: "{{ upgrade_packages_on_hold }}"
   tags: upgrade
 
@@ -39,6 +41,5 @@
     cmd: "yum needs-restarting -r"
   register: needs_restarting
   changed_when: needs_restarting.rc == 1
-  failed_when: needs_restarting.rc == 0
+  failed_when: needs_restarting.rc == 0 and needs_restarting.changed is true
   tags: upgrade
-  

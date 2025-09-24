@@ -1,3 +1,7 @@
+<<<<<<< HEAD
 ---
 # handlers file for ansible-role-upgrade
-
+=======
+---
+# handlers file for ansible-role-upgrade
+>>>>>>> parent of e667dff (initial commit)

@@ -4,14 +4,16 @@
 upgrade_stable_os:
   - Almalinux 8
   - Almalinux 9
+  - Almalinux 10
   - Debian 10
   - Debian 11
   - Debian 12
-  - Fedora 38
-  - Fedora 39
   - Fedora 40
+  - Fedora 41
+  - Fedora 42
   - Rocky 8
   - Rocky 9
+  - Rocky 10
   - Ubuntu 20
   - Ubuntu 22
   - Ubuntu 24
