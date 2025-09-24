@@ -18,4 +18,5 @@
       changed_when: false
 
   roles:
-    - role: iamenr0s.ansible_role_upgrade
+    - role: ../../
+      name: upgrade
