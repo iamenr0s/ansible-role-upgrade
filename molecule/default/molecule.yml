@@ -1,45 +1,26 @@
 ---
+role_name_check: 1
 dependency:
   name: galaxy
-lint: |
-  yamllint .
-  ansible-lint
+  options:
+    ignore-errors: true
 driver:
-<<<<<<< HEAD
-  name: molecule-qemu
-platforms:
-  - name: "${MOLECULE_DISTRO:-ubuntu2204}"
-    image_url: "${MOLECULE_IMAGE_URL}"
-    image_checksum: "${MOLECULE_IMAGE_CHECKSUM}"
-    network_ssh_port: ${MOLECULE_NETWORK_SSH_PORT:-2222}
-    vm_cpus: 2 # optional, default is 1
-    vm_memory: 2048 # optional, default is 512
-    vm_disk: 10G # optional, default is 8G
-    groups:
-      - "${MOLECULE_GROUP:-debian_family}"
-=======
-  name: podman
-platforms:
-  - name: instance
-    image: "iamenr0s/docker-${MOLECULE_DISTRO:-rockylinux9}-ansible:latest"
-    command: ${MOLECULE_DOCKER_COMMAND:-""}
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
-    cgroupns_mode: host
-    privileged: true
-    pre_build_image: true
->>>>>>> parent of e667dff (initial commit)
-provisioner:
-  name: ansible
-  env:
-    ANSIBLE_FORCE_COLOR: "${MOLECULE_ANSIBLE_COLOR:-true}"
+  name: vagrant
+  provider:
+    name: libvirt
   config_options:
     defaults:
-      retry_files_enabled: true
-      host_key_checking: false
-      connection_retries: 10
-      connection_retry_sleep: 15
-  options:
-    vvv: "${MOLECULE_VERBOSE:-false}"
-verifier:
+      remote_user: vagrant
+    ssh_connection:
+      ssh_args: -o StrictHostKeyChecking=no -o User=vagrant
+      pipelining: true
+      timeout: 300
+platforms:
+  - name: instance
+    box: generic/fedora38
+    memory: 512
+    cpus: 1
+provisioner:
   name: ansible
+  playbooks:
+    converge: ${MOLECULE_PLAYBOOK:-converge.yml}
