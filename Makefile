@@ -51,6 +51,8 @@ help:
 install-deps-qemu:
 	@echo "$(YELLOW)Installing dependencies for molecule-qemu...$(NC)"
 	pip install molecule-qemu molecule[ansible] ansible-lint yamllint
+	@echo "$(YELLOW)Installing Ansible collections...$(NC)"
+	ansible-galaxy collection install -r requirements.yml
 	@echo "$(YELLOW)Installing QEMU (platform-specific)...$(NC)"
 	@if command -v brew >/dev/null 2>&1; then \
 		echo "Installing QEMU on macOS..."; \
