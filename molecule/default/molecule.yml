@@ -44,3 +44,4 @@ scenario:
     - verify
     - cleanup
     - destroy
+  destroy_playbook: destroy.yml
