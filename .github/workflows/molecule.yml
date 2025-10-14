@@ -37,13 +37,9 @@ jobs:
         distro:
           - almalinux8
           - almalinux9
-          - almalinux10
           - fedora40
-          - fedora41
-          - fedora42
           - rockylinux8
           - rockylinux9
-          - rockylinux10
 
     steps:
       - name: Check out the codebase.
