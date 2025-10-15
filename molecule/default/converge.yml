@@ -5,7 +5,6 @@
     test_user: vagrant
     ansible_async_dir: '/tmp/ansible_async'
   become: true
-  become_method: enable
 
   pre_tasks:
     - name: Wait for systemd to complete initialization
