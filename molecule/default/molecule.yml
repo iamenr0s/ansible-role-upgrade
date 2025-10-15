@@ -19,14 +19,3 @@ provisioner:
   name: ansible
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
-  env:
-    ANSIBLE_BECOME_PASS: ""
-  config_options:
-    defaults:
-      become_ask_pass: false
-      host_key_checking: false
-    privilege_escalation:
-      become: true
-      become_method: sudo
-      become_user: root
-      become_ask_pass: false
