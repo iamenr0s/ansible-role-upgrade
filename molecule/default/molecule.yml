@@ -22,10 +22,11 @@ provisioner:
       hosts: inventory
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
+    prepare: prepare.yml
   env:
-    ANSIBLE_SUDO_PASS: ""
+    ANSIBLE_REMOTE_TMP: /tmp/.ansible-${USER}/tmp
   config_options:
     defaults:
       host_key_checking: false
-      remote_tmp: /tmp
+      remote_tmp: /tmp/.ansible-${USER}/tmp
       interpreter_python: auto_silent

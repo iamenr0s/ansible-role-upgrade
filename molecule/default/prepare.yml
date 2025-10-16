@@ -3,20 +3,9 @@
   hosts: all
   gather_facts: false
   tasks:
-    - name: Set up passwordless sudo
-      ansible.builtin.lineinfile:
-        path: /etc/sudoers
-        state: present
-        regexp: '^%wheel'
-        line: '%wheel ALL=(ALL) NOPASSWD: ALL'
-        validate: 'visudo -cf %s'
-      become: true
-      ignore_errors: true
-
-    - name: Create ansible user if it doesn't exist
-      ansible.builtin.user:
-        name: ansible
-        groups: wheel
-        append: true
-      become: true
+    - name: Create temporary directory
+      ansible.builtin.file:
+        path: /tmp/.ansible-root/tmp
+        state: directory
+        mode: '0777'
       ignore_errors: true
