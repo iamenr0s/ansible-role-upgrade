@@ -1,0 +1,8 @@
+[all]
+instance ansible_connection=docker ansible_user=root
+
+[all:vars]
+ansible_become=false
+ansible_become_method=sudo
+ansible_become_user=root
+ansible_python_interpreter=/usr/bin/python3

@@ -17,5 +17,15 @@ platforms:
     pre_build_image: true
 provisioner:
   name: ansible
+  inventory:
+    links:
+      hosts: inventory
   playbooks:
     converge: ${MOLECULE_PLAYBOOK:-converge.yml}
+  env:
+    ANSIBLE_SUDO_PASS: ""
+  config_options:
+    defaults:
+      host_key_checking: false
+      remote_tmp: /tmp
+      interpreter_python: auto_silent
