@@ -1,5 +1,6 @@
 ---
 # tasks file for ansible-role-upgrade
+
 - name: Reboot the server after OS upgrade and register the reboot
   ansible.builtin.reboot:
     reboot_timeout: "{{ wait_for_timeout }}"

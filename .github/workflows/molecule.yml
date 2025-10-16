@@ -1,5 +1,4 @@
 ---
-
 name: Molecule
 on:
   push:
