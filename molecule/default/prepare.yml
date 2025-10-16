@@ -2,10 +2,12 @@
 - name: Prepare
   hosts: all
   gather_facts: false
+  become: false
+
   tasks:
-    - name: Create temporary directory
+    - name: Ensure /tmp exists with correct permissions
       ansible.builtin.file:
-        path: /tmp/.ansible-root/tmp
+        path: /tmp
         state: directory
         mode: '0777'
       ignore_errors: true
