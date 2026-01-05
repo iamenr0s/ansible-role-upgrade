@@ -26,4 +26,4 @@
 - name: Check if the server is back online and fail if not
   ansible.builtin.fail:
     msg: "Server is not back online after reboot"
-  when: not reboot.finished
+  when: reboot_result is defined and not (reboot_result.rebooted | default(true) | bool)

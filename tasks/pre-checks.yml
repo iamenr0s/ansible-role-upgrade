@@ -23,9 +23,9 @@
     system_loadavg: "{{ ansible_loadavg['15m'] | float }}"
 
 - name: Check if the host is stable (uptime and load average) and fail if not
-  ansible.builtin.debug:
+  ansible.builtin.fail:
     msg: "Host is not stable, uptime: {{ system_uptime }} seconds, load average: {{ system_loadavg }}"
-  when: system_uptime < min_uptime or system_loadavg > max_load_avg
+  when: system_uptime | int < min_uptime | int and system_loadavg | float > max_load_avg | float
 
 - name: Check filesystem usage and fail if any filesystem is above the threshold
   ansible.builtin.debug:
