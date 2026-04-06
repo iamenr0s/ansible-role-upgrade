@@ -40,7 +40,12 @@
 - name: Check for Reboot Hint
   ansible.builtin.command:
     cmd: "dnf needs-restarting -r"
-  register: needs_restarting
-  changed_when: needs_restarting.rc == 1
-  failed_when: needs_restarting.rc == 0 and needs_restarting.changed is true
+  register: needs_restarting_cmd
+  changed_when: needs_restarting_cmd.rc == 1
+  failed_when: needs_restarting_cmd.rc > 1
+  tags: upgrade
+
+- name: Set reboot hint fact
+  ansible.builtin.set_fact:
+    needs_reboot: "{{ needs_restarting_cmd.rc == 1 }}"
   tags: upgrade

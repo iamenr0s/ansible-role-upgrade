@@ -45,5 +45,10 @@
 - name: apt | Check for Reboot Hint
   ansible.builtin.stat:
     path: /var/run/reboot-required
-  register: needs_restarting
+  register: reboot_required_stat
+  tags: upgrade
+
+- name: apt | Set reboot hint fact
+  ansible.builtin.set_fact:
+    needs_reboot: "{{ reboot_required_stat.stat.exists }}"
   tags: upgrade
