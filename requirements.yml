@@ -1,0 +1,6 @@
+---
+# Ansible Collections Requirements
+
+collections:
+  - name: community.general
+    version: ">=6.0.0"

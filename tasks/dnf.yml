@@ -1,0 +1,53 @@
+---
+# tasks file for ansible-role-upgrade
+
+- name: Ensure Dependencies are present.
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - dnf
+    - dnf-utils
+  tags: upgrade
+
+- name: Mark packages on hold {{ upgrade_packages_on_hold }}
+  ansible.builtin.command:
+    cmd: "dnf versionlock add {{ item }}"
+  loop: "{{ upgrade_packages_on_hold }}"
+  register: dnf_versionlock_add_result
+  changed_when: "'already locked' not in dnf_versionlock_add_result.stderr"
+  tags: upgrade
+
+- name: Upgrade via dnf module
+  ansible.builtin.dnf:
+    name: "*"
+    state: present
+    update_cache: yes
+    update_only: yes
+  tags: upgrade
+
+- name: Remove packages on hold
+  ansible.builtin.command:
+    cmd: "dnf versionlock delete {{ item }}"
+  loop: "{{ upgrade_packages_on_hold }}"
+  register: dnf_versionlock_delete_result
+  changed_when: "'not locked' not in dnf_versionlock_delete_result.stderr"
+  tags: upgrade
+
+- name: Clean dnf cache
+  ansible.builtin.dnf:
+    autoremove: yes
+  tags: upgrade
+
+- name: Check for Reboot Hint
+  ansible.builtin.command:
+    cmd: "dnf needs-restarting -r"
+  register: needs_restarting_cmd
+  changed_when: needs_restarting_cmd.rc == 1
+  failed_when: needs_restarting_cmd.rc > 1
+  tags: upgrade
+
+- name: Set reboot hint fact
+  ansible.builtin.set_fact:
+    needs_reboot: "{{ needs_restarting_cmd.rc == 1 }}"
+  tags: upgrade
