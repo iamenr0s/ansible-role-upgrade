@@ -1,4 +1,5 @@
 ---
+
 # defaults file for ansible-role-upgrade
 
 upgrade_stable_os:
