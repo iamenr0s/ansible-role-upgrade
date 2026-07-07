@@ -1,0 +1,40 @@
+---
+
+- name: Verify
+  hosts: all
+  gather_facts: true
+  become: false
+
+  vars_files:
+    - ../../defaults/main.yml
+
+  tasks:
+    - name: verify | Assert apt-held packages match the configured hold list
+      when: ansible_pkg_mgr == 'apt'
+      block:
+        - name: verify | apt | List packages currently on hold
+          ansible.builtin.command:
+            cmd: apt-mark showhold
+          register: __verify_apt_showhold
+          changed_when: false
+
+        - name: verify | apt | Assert only the configured packages remain on hold
+          ansible.builtin.assert:
+            that:
+              - (__verify_apt_showhold.stdout_lines | default([])) | difference(upgrade_packages_on_hold) | length == 0
+            fail_msg: "Unexpected packages left on hold: {{ __verify_apt_showhold.stdout_lines }}"
+
+    - name: verify | Assert dnf/yum versionlocks match the configured hold list
+      when: ansible_pkg_mgr in ['dnf', 'yum']
+      block:
+        - name: verify | dnf | List current versionlock entries
+          ansible.builtin.command:
+            cmd: dnf -q versionlock list
+          register: __verify_dnf_versionlock
+          changed_when: false
+
+        - name: verify | dnf | Assert only the configured packages remain locked
+          ansible.builtin.assert:
+            that:
+              - (__verify_dnf_versionlock.stdout_lines | default([]) | length) == (upgrade_packages_on_hold | length)
+            fail_msg: "Unexpected versionlock entries remain: {{ __verify_dnf_versionlock.stdout_lines }}"

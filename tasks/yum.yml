@@ -1,0 +1,60 @@
+---
+
+# tasks file for ansible-role-upgrade
+
+- name: yum | Ensure dependencies are present
+  ansible.builtin.package:
+    name:
+      - yum
+      - yum-utils
+      - yum-plugin-versionlock
+    state: present
+  tags: upgrade
+
+- name: yum | Mark packages on hold {{ upgrade_packages_on_hold }}
+  community.general.yum_versionlock:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ upgrade_packages_on_hold }}"
+  tags: upgrade
+
+# dnf module: yum has no dedicated upgrade-all module; dnf is used as the underlying package manager on these platforms.
+- name: yum | Upgrade via dnf module
+  ansible.builtin.dnf:
+    name: "*"
+    state: present
+    update_cache: yes
+    update_only: yes
+  tags: upgrade
+
+- name: yum | Remove packages on hold
+  community.general.yum_versionlock:
+    name: "{{ item }}"
+    state: absent
+  loop: "{{ upgrade_packages_on_hold }}"
+  tags: upgrade
+
+# dnf module: yum has no dedicated cache-clean module; dnf is used as the underlying package manager on these platforms.
+- name: yum | Clean cache via dnf module
+  ansible.builtin.dnf:
+    autoremove: yes
+  tags: upgrade
+
+# command: no module exposes "dnf needs-restarting -r"'s reboot-required exit code.
+# Skipped when upgrade_skip_reboot is set: the result is otherwise unused, and on a
+# host that's never actually rebooted (e.g. a Molecule container) this command keeps
+# reporting "restart needed" forever, which breaks idempotency for no functional reason.
+- name: yum | Check for reboot hint
+  ansible.builtin.command:
+    cmd: "dnf needs-restarting -r"
+  register: __upgrade_needs_restarting_cmd
+  changed_when: __upgrade_needs_restarting_cmd.rc == 1
+  failed_when: __upgrade_needs_restarting_cmd.rc > 1
+  when: not (upgrade_skip_reboot | bool)
+  tags: upgrade
+
+- name: yum | Set reboot hint fact
+  ansible.builtin.set_fact:
+    __upgrade_needs_reboot: "{{ __upgrade_needs_restarting_cmd.rc == 1 }}"
+  when: not (upgrade_skip_reboot | bool)
+  tags: upgrade

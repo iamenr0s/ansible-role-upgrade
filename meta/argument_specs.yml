@@ -1,0 +1,66 @@
+---
+
+argument_specs:
+  main:
+    short_description: >-
+      Performs safe, system-wide package upgrades on Debian/Ubuntu and
+      RHEL-family (AlmaLinux/RockyLinux/Fedora) hosts.
+    options:
+      upgrade_stable_os:
+        description: >-
+          Allowed "<Distribution> <major version>" strings. The pre-checks
+          fail early if the host isn't in this list.
+        type: list
+        elements: str
+        default:
+          - AlmaLinux 8
+          - AlmaLinux 9
+          - AlmaLinux 10
+          - Debian 10
+          - Debian 11
+          - Debian 12
+          - Fedora 40
+          - Fedora 41
+          - Fedora 42
+          - Rocky 8
+          - Rocky 9
+          - Rocky 10
+          - Ubuntu 20
+          - Ubuntu 22
+          - Ubuntu 24
+      upgrade_min_uptime:
+        description: Minimum uptime in seconds required before the upgrade proceeds.
+        type: int
+        default: 3600
+      upgrade_max_load_avg:
+        description: Maximum allowed 15-minute load average before the upgrade proceeds.
+        type: float
+        default: 1.0
+      upgrade_max_filesystem_usage:
+        description: Maximum allowed filesystem usage percentage before the upgrade proceeds.
+        type: int
+        default: 90
+      upgrade_wait_for_timeout:
+        description: Timeout in seconds to wait for the host to come back online after a reboot.
+        type: int
+        default: 300
+      upgrade_reboot_delay:
+        description: Delay in seconds before rebooting the host.
+        type: int
+        default: 10
+      upgrade_wait_for_port:
+        description: Port used to verify connectivity after a reboot.
+        type: int
+        default: 22
+      upgrade_packages_on_hold:
+        description: Packages to keep on hold (version-locked) during the upgrade.
+        type: list
+        elements: str
+        default: []
+      upgrade_skip_reboot:
+        description: >-
+          Skip the post-upgrade reboot and connectivity wait entirely (for
+          environments, like containers, that can't perform a real reboot or
+          run sshd).
+        type: bool
+        default: false

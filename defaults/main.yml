@@ -1,0 +1,38 @@
+---
+
+# defaults file for ansible-role-upgrade
+
+upgrade_stable_os:
+  - AlmaLinux 8
+  - AlmaLinux 9
+  - AlmaLinux 10
+  - Debian 10
+  - Debian 11
+  - Debian 12
+  - Fedora 40
+  - Fedora 41
+  - Fedora 42
+  - Rocky 8
+  - Rocky 9
+  - Rocky 10
+  - Ubuntu 20
+  - Ubuntu 22
+  - Ubuntu 24
+
+# Minimum uptime in seconds (1 hour)
+upgrade_min_uptime: 3600
+# Maximum allowed load average
+upgrade_max_load_avg: 1.0
+# Maximum allowed filesystem usage percentage
+upgrade_max_filesystem_usage: 90
+# Timeout for the server to be back online (in seconds)
+upgrade_wait_for_timeout: 300
+# Delay before rebooting the server (in seconds)
+upgrade_reboot_delay: 10
+# Default SSH port to check connectivity
+upgrade_wait_for_port: 22
+# List of packages to hold
+upgrade_packages_on_hold: []
+# Skip the post-upgrade reboot and connectivity wait entirely (for environments,
+# like containers, that can't perform a real reboot or run sshd)
+upgrade_skip_reboot: false

@@ -1,0 +1,8 @@
+---
+
+# Fresh test containers always report near-zero uptime; the role's
+# production default (1 hour) would fail every molecule run.
+upgrade_min_uptime: 0
+# Containers can't perform a real reboot or run sshd, so wait_for-port-22
+# after a reboot always times out; skip that step under Molecule.
+upgrade_skip_reboot: true

@@ -1,0 +1,62 @@
+---
+
+# tasks file for ansible-role-upgrade
+
+- name: dnf | Ensure dependencies are present
+  ansible.builtin.package:
+    name:
+      - dnf
+      - dnf-utils
+      - "dnf-command(versionlock)"
+    state: present
+  tags: upgrade
+
+# command: used because dnf versionlock has no dedicated Ansible module.
+- name: dnf | Mark packages on hold {{ upgrade_packages_on_hold }}
+  ansible.builtin.command:
+    cmd: "dnf versionlock add {{ item }}"
+  loop: "{{ upgrade_packages_on_hold }}"
+  register: __upgrade_dnf_versionlock_add_result
+  changed_when: "'already locked' not in __upgrade_dnf_versionlock_add_result.stderr"
+  tags: upgrade
+
+- name: dnf | Upgrade via dnf module
+  ansible.builtin.dnf:
+    name: "*"
+    state: present
+    update_cache: yes
+    update_only: yes
+  tags: upgrade
+
+# command: used because dnf versionlock has no dedicated Ansible module.
+- name: dnf | Remove packages on hold
+  ansible.builtin.command:
+    cmd: "dnf versionlock delete {{ item }}"
+  loop: "{{ upgrade_packages_on_hold }}"
+  register: __upgrade_dnf_versionlock_delete_result
+  changed_when: "'not locked' not in __upgrade_dnf_versionlock_delete_result.stderr"
+  tags: upgrade
+
+- name: dnf | Clean dnf cache
+  ansible.builtin.dnf:
+    autoremove: yes
+  tags: upgrade
+
+# command: no module exposes "dnf needs-restarting -r"'s reboot-required exit code.
+# Skipped when upgrade_skip_reboot is set: the result is otherwise unused, and on a
+# host that's never actually rebooted (e.g. a Molecule container) this command keeps
+# reporting "restart needed" forever, which breaks idempotency for no functional reason.
+- name: dnf | Check for reboot hint
+  ansible.builtin.command:
+    cmd: "dnf needs-restarting -r"
+  register: __upgrade_needs_restarting_cmd
+  changed_when: __upgrade_needs_restarting_cmd.rc == 1
+  failed_when: __upgrade_needs_restarting_cmd.rc > 1
+  when: not (upgrade_skip_reboot | bool)
+  tags: upgrade
+
+- name: dnf | Set reboot hint fact
+  ansible.builtin.set_fact:
+    __upgrade_needs_reboot: "{{ __upgrade_needs_restarting_cmd.rc == 1 }}"
+  when: not (upgrade_skip_reboot | bool)
+  tags: upgrade

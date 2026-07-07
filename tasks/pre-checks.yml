@@ -1,0 +1,47 @@
+---
+
+# tasks file for ansible-role-upgrade
+
+- name: pre-checks | Gather facts about the system at minimum verbosity
+  ansible.builtin.setup:
+    gather_subset:
+      - '!all'
+      - '!min'
+      - 'distribution'
+      - 'loadavg'
+      - 'mounts'
+      - 'pkg_mgr'
+
+- name: pre-checks | Fail if target host is not stable for this Role
+  ansible.builtin.fail:
+    msg: >-
+      This role is not compatible with the current OS version
+      {{ ansible_facts['distribution'] }} - {{ ansible_facts['distribution_version'].split('.')[0] }}
+  when: ansible_facts['distribution'] + " " + ansible_facts['distribution_version'].split('.')[0]
+    not in upgrade_stable_os
+
+- name: pre-checks | Check system uptime (in seconds) set fact
+  ansible.builtin.set_fact:
+    __upgrade_system_uptime: "{{ ansible_facts['uptime_seconds'] | int }}"
+
+- name: pre-checks | Get system load average first value
+  ansible.builtin.set_fact:
+    __upgrade_system_loadavg: "{{ ansible_facts['loadavg']['15m'] | float }}"
+
+- name: pre-checks | Check if the host is stable (uptime and load average) and fail if not
+  ansible.builtin.fail:
+    msg: >-
+      Host is not stable, uptime: {{ __upgrade_system_uptime }} seconds,
+      load average: {{ __upgrade_system_loadavg }}
+  when: (__upgrade_system_uptime | int < upgrade_min_uptime | int) or
+    (__upgrade_system_loadavg | float > upgrade_max_load_avg | float)
+
+- name: pre-checks | Fail if any filesystem is above the usage threshold
+  ansible.builtin.fail:
+    msg: >-
+      Filesystem {{ item['mount'] }} is at
+      {{ (100 - (item['size_available'] * 100 / item['size_total'])) | round(2) }}%
+      usage, above the {{ upgrade_max_filesystem_usage }}% threshold
+  loop: "{{ ansible_facts['mounts'] }}"
+  when: (100 - (item['size_available'] * 100 / item['size_total'])) | round(2) >=
+    upgrade_max_filesystem_usage | float

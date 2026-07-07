@@ -1,0 +1,40 @@
+---
+
+dependencies: []
+
+galaxy_info:
+  role_name: ansible_role_upgrade
+  author: iamenr0s
+  description:  This role performs upgrades on Debian/Ubuntu, and RHEL/AlmaLinux/RockyLinux, Fedora servers.
+  license: This project is licensed under the MIT License.
+  min_ansible_version: "2.10"
+  platforms:
+    - name: "EL"
+      versions:
+        - "8"
+        - "9"
+        - "10"
+    - name: "Rocky"
+      versions:
+        - "all"
+    - name: "Fedora"
+      versions:
+        - "40"
+        - "41"
+        - "42"
+    - name: "Debian"
+      versions:
+        - "buster"
+        - "bullseye"
+        - "bookworm"
+    - name: "Ubuntu"
+      versions:
+        - "focal"
+        - "jammy"
+        - "noble"
+  galaxy_tags:
+    - system
+    - orchestration
+    - server
+    - upgrade
+    - operations
