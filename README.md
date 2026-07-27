@@ -138,11 +138,6 @@ Notes
 - RHEL-like systems using `yum` may rely on `dnf` modules for some operations; ensure `dnf` is available or adapt the tasks for your environment.
 - Ensure the remote machines have Python 3.7+; older Python may cause Ansible module execution issues.
 
-Contributing & Security
------------------------
-- Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
-- Report vulnerabilities privately per [SECURITY.md](SECURITY.md); do not open public issues for them.
-
 CI & Release (maintainers)
 --------------------------
 A single workflow (`.github/workflows/molecule.yml`) runs lint and the full Molecule distro matrix on pushes to `main`, PRs, and `v*` tags. On `v*` tags, a `release` job publishes to Ansible Galaxy after all tests pass.
@@ -161,11 +156,23 @@ gh secret set SECURITY_ALERT_WEBHOOK --env galaxy --repo iamenr0s/ansible-role-u
 
 To release: tag a commit `vX.Y.Z` and push the tag — CI gates the Galaxy publish.
 
-License
--------
-This project is licensed under the MIT License.
+## Contributing
 
-Author Information
-------------------
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for the
+local pipeline commands and pull request checklist. This project follows the
+[Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Security
+
+See [SECURITY.md](SECURITY.md) — GitHub private vulnerability reporting, no
+public issues for security bugs.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+## Author Information
+
 Author: iamenr0s
+
 Galaxy: `iamenr0s.ansible_role_upgrade`
