@@ -28,13 +28,25 @@
   ansible.builtin.set_fact:
     __upgrade_system_loadavg: "{{ ansible_facts['loadavg']['15m'] | float }}"
 
-- name: pre-checks | Check if the host is stable (uptime and load average) and fail if not
+- name: pre-checks | Set fact if the host is not stable (uptime and load average)
+  ansible.builtin.set_fact:
+    __upgrade_host_unstable: "{{ (__upgrade_system_uptime | int < upgrade_min_uptime | int) or
+      (__upgrade_system_loadavg | float > upgrade_max_load_avg | float) }}"
+
+- name: pre-checks | Fail if the host is not stable and upgrade_fail_on_unstable_host is true
   ansible.builtin.fail:
     msg: >-
       Host is not stable, uptime: {{ __upgrade_system_uptime }} seconds,
       load average: {{ __upgrade_system_loadavg }}
-  when: (__upgrade_system_uptime | int < upgrade_min_uptime | int) or
-    (__upgrade_system_loadavg | float > upgrade_max_load_avg | float)
+  when: __upgrade_host_unstable | bool and upgrade_fail_on_unstable_host | bool
+
+- name: pre-checks | Warn if the host is not stable and upgrade_fail_on_unstable_host is false
+  ansible.builtin.debug:
+    msg: >-
+      Host is not stable, uptime: {{ __upgrade_system_uptime }} seconds,
+      load average: {{ __upgrade_system_loadavg }}. Continuing anyway because
+      upgrade_fail_on_unstable_host is false.
+  when: __upgrade_host_unstable | bool and not upgrade_fail_on_unstable_host | bool
 
 - name: pre-checks | Fail if any filesystem is above the usage threshold
   ansible.builtin.fail:

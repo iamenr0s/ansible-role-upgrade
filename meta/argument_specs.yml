@@ -36,6 +36,12 @@ argument_specs:
         description: Maximum allowed 15-minute load average before the upgrade proceeds.
         type: float
         default: 1.0
+      upgrade_fail_on_unstable_host:
+        description: >-
+          Fail (true) or just warn and continue (false) when the host is
+          unstable (uptime or load average breach).
+        type: bool
+        default: true
       upgrade_max_filesystem_usage:
         description: Maximum allowed filesystem usage percentage before the upgrade proceeds.
         type: int

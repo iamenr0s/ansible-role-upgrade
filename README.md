@@ -40,6 +40,7 @@ Defined in `defaults/main.yml`:
 - `upgrade_stable_os` (list): Allowed OS name + major version strings used for safety checks.
 - `upgrade_min_uptime` (int): Minimum uptime in seconds before upgrade (default: `3600`).
 - `upgrade_max_load_avg` (float): Maximum allowed load average (default: `1.0`).
+- `upgrade_fail_on_unstable_host` (bool): Fail (`true`) or just warn and continue (`false`) when the host is unstable (default: `true`).
 - `upgrade_max_filesystem_usage` (int): Maximum allowed filesystem usage percentage before upgrade (default: `90`).
 - `upgrade_wait_for_timeout` (int): Timeout in seconds to wait for host to return after reboot (default: `300`).
 - `upgrade_reboot_delay` (int): Delay in seconds before reboot (default: `10`).
@@ -52,7 +53,7 @@ Behavior Overview
 Pre-checks (`tasks/pre-checks.yml`):
 - Fails if `ansible_distribution` + major version is not in `upgrade_stable_os`.
 - Gathers minimal facts and calculates uptime and 15m load average.
-- Fails if uptime is below `upgrade_min_uptime` or load average exceeds `upgrade_max_load_avg`.
+- Fails (or warns and continues, if `upgrade_fail_on_unstable_host` is `false`) when uptime is below `upgrade_min_uptime` or load average exceeds `upgrade_max_load_avg`.
 - Fails if any filesystem exceeds `upgrade_max_filesystem_usage`%.
 
 Package manager flows:
