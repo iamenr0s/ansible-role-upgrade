@@ -8,6 +8,6 @@ repos:
         args: [--strict]
 
   - repo: https://github.com/ansible/ansible-lint
-    rev: v25.1.2
+    rev: v25.12.2
     hooks:
       - id: ansible-lint
