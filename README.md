@@ -26,12 +26,25 @@ Supported Platforms
 The role enforces a stability guardrail via `upgrade_stable_os` (defaults):
 
 - AlmaLinux 8, 9, 10
-- Debian 10, 11, 12
+- Debian 10, 11, 12, 13
 - Fedora 40, 41, 42
 - Rocky 8, 9, 10
 - Ubuntu 20, 22, 24
 
 Note: Platforms in `meta/main.yml` reflect Galaxy metadata; the runtime guard uses the list above to fail early on unsupported OS major versions.
+
+### End-of-life Debian (10 and 11)
+
+Debian 10 (buster) and 11 (bullseye) are past both regular security support and Debian LTS, so their packages have been removed from `deb.debian.org` / `security.debian.org`. `apt-get upgrade` on such a host fails with `404 Not Found` unless apt is pointed at `archive.debian.org`, which keeps the final state of these releases (no new updates). Paid Extended LTS from Freexian is the only source of further security fixes.
+
+- This role does **not** change your apt sources. If your EOL hosts still use `deb.debian.org`, repoint them yourself, e.g. in `/etc/apt/sources.list`:
+  ```
+  deb http://archive.debian.org/debian bullseye main
+  deb http://archive.debian.org/debian-security bullseye-security main   # buster: buster/updates
+  ```
+  and, because the archive's Release files are expired, set `Acquire::Check-Valid-Until "false";` in `/etc/apt/apt.conf.d/`.
+- CI does exactly this in `molecule/default/prepare.yml` for the `debian10` and `debian11` legs, so they keep testing against the frozen archive.
+- Treat these releases as best-effort: migrate to a supported release (Debian 12/13) where you can.
 
 Role Variables
 --------------

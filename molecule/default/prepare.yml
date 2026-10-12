@@ -16,6 +16,28 @@
     # (and symlinking python3 to it) previously broke Fedora 41/42's dnf5
     # module, which needs libdnf5 bindings built against the system's actual
     # default python3 (3.13), not python3.9.
+    # Debian 10 (buster) and 11 (bullseye) are end-of-life: their packages were
+    # removed from deb.debian.org / security.debian.org and now live only on
+    # archive.debian.org (404s otherwise). Repoint apt before anything installs.
+    # The archive's Release files are expired, so validity checks are disabled.
+    - name: Point apt at archive.debian.org for EOL Debian (raw)
+      ansible.builtin.raw: |
+        bash -lc '
+        command -v apt-get >/dev/null 2>&1 || exit 0
+        . /etc/os-release
+        case "${VERSION_CODENAME:-}" in
+          buster)   sec="buster/updates" ;;
+          bullseye) sec="bullseye-security" ;;
+          *) exit 0 ;;
+        esac
+        rm -f /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources
+        {
+          echo "deb http://archive.debian.org/debian ${VERSION_CODENAME} main"
+          echo "deb http://archive.debian.org/debian-security ${sec} main"
+        } > /etc/apt/sources.list
+        echo "Acquire::Check-Valid-Until \"false\";" > /etc/apt/apt.conf.d/99archive'
+      changed_when: true
+
     - name: Install Python 3 (raw, cross-platform)
       ansible.builtin.raw: >
         bash -lc '

@@ -9,6 +9,7 @@ upgrade_stable_os:
   - Debian 10
   - Debian 11
   - Debian 12
+  - Debian 13
   - Fedora 40
   - Fedora 41
   - Fedora 42
